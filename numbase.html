@@ -40,7 +40,7 @@
         <p>당신은 과연 10번 안에 숫자를 맞출 수 있을까요?</p>
         <p>3자리 숫자를 입력해보세요.</p>
         <form id="form">
-            <input type="text" id="input">
+            <input type="number" id="input" placeholder="숫자만 입력하세요!">
             <button id="check">확인</button>
         </form>
     </div>
@@ -79,10 +79,7 @@
             return true;
         }
 
-        function defeated() {
-            const message = document.createTextNode(`패배! 정답은 ${answer.join('')}`);
-            $logs.appendChild(message);
-        }
+        
 
         $form.addEventListener('submit', (event) => {
             // 기본 동작 막기. -> 여기서는 새로고침을 막음. 대표적인 친구들이 form tag와 a tag.
@@ -92,11 +89,7 @@
             if (checkInput(value)) {
                 // 입력값 문제 없음
                 if (answer.join('') === value) {
-                    $logs.textContent = '정답!!';
-                    return;
-                }
-                if (tries.length >= 9) {
-                    defeated();
+                    $logs.textContent = `${tries.length + 1}번 만에 맞추셨습니다.`;
                     return;
                 }
             } else {
