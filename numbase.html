@@ -5,8 +5,9 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>숫자야구!</title>
+    <title>숫자야구</title>
 </head>
+
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -33,70 +34,101 @@
     }
 </style>
 
-<script>
-    gamestart = () => {
-        // 비밀 숫자 생성 함수
-        function makeRandomNum() {
-            let code;
-            do {
-                code = Math.floor(Math.random() * 900) + 100; // 3자리의 랜덤한 비밀 숫자 생성
-            } while (duplicateCheck(code)); // 중복체크 함수 실행 => 결과가 false일때까지 반복 실행
-            return code;
+<body>
+    <div>
+        <h1>숫자 야구!</h1>
+        <p>당신은 과연 10번 안에 숫자를 맞출 수 있을까요?</p>
+        <p>3자리 숫자를 입력해보세요.</p>
+        <form id="form">
+            <input type="text" id="input">
+            <button id="check">확인</button>
+        </form>
+    </div>
+    <div id="logs"></div>
+    <script>
+        const $input = document.querySelector('#input');
+        const $form = document.querySelector('#form');
+        const $logs = document.querySelector('#logs');
+        let out = 0;
+
+        const numbers = [];
+        for (let i = 0; i < 9; i += 1) {
+            numbers.push(i + 1);
+        }
+        const answer = [];
+        for (let i = 0; i < 3; i += 1) {
+            // 0~8을 입력받고 반복 할 때마다 최댓값의 범위를 1 줄인다.
+            const index = Math.floor(Math.random() * (numbers.length - i));
+            answer.push(numbers[index]);    // 해당 인덱스가 있다면 answer에 push한다.
+            // 한번 나왔으므로 numbers에서 지워버린다. 그러면 그 뒤에 숫자들은 자동적으로 앞으로 땡겨진다.
+            numbers.splice(index, 1);
+        }
+        console.log(answer);
+
+        const tries = [];
+        function checkInput(input) {
+            if (input.length !== 3) {
+                return alert('3자리 숫자를 입력해주세요.');
+            }
+            if (new Set(input).size !== 3) {
+                return alert('중복되지 않게 입력해주세요.');
+            }
+            if (tries.includes(input)) {
+                return alert('이미 시도한 값입니다.');
+            }
+            return true;
         }
 
-        // 중복체크 함수
-        function duplicateCheck(num) {
-            const nums = Array.from(num.toString()).map(Number); // 생성한 랜덤 숫자를 배열로 변환
-            return new Set(nums).size !== nums.length; // 중복된 숫자가 있는지 체크 중복이 없으면 false 반환
+        function defeated() {
+            const message = document.createTextNode(`패배! 정답은 ${answer.join('')}`);
+            $logs.appendChild(message);
         }
 
-        // 게임의 한 라운드를 진행하는 함수
-        function playRound(secretNums, guess) {
-            const secretcodes = Array.from(secretNums.toString()).map(Number); // 비밀 코드를 숫자 배열로 변환
-            const guessnums = Array.from(guess.toString()).map(Number); // 사용자가 입력한 숫자를 자릿수 배열로 변환
+        $form.addEventListener('submit', (event) => {
+            // 기본 동작 막기. -> 여기서는 새로고침을 막음. 대표적인 친구들이 form tag와 a tag.
+            event.preventDefault();
+            const value = $input.value;
+            $input.value = '';
+            if (checkInput(value)) {
+                // 입력값 문제 없음
+                if (answer.join('') === value) {
+                    $logs.textContent = '정답!!';
+                    return;
+                }
+                if (tries.length >= 9) {
+                    defeated();
+                    return;
+                }
+            } else {
+                // 에러
+                return;
+            }
+
             let strike = 0;
             let ball = 0;
-            for (let i = 0; i < secretcodes.length; i++) {
-                if (secretcodes[i] === guessnums[i]) {
-                    strike++; // 숫자와 자리가 같을 경우 스트라이크 카운트 증가
-                } else if (secretcodes.includes(guessnums[i])) {
-                    ball++; // 숫자는 같지만 자리가 다를 경우 볼 카운트 증가
+            for (let i = 0; i < answer.length; i += 1) {
+                const index = value.indexOf(answer[i]);
+                if (index > -1) {
+                    if (i === index) {
+                        strike += 1;
+                    } else {
+                        ball += 1;
+                    }
                 }
             }
-            return { strike, ball }; // 스트라이크와 볼 카운트 반환
-        }
-
-        // 게임 설정
-        const secretNums = makeRandomNum(); // 비밀 숫자 생성
-        let guessCount = 0; // 추측 카운트 초기화
-
-        const resultData = document.getElementById("result"); // 결과값 저장할 doc 및 해당 doc 통해 결과 페이지에 출력
-        // 게임 루프
-        while (true) {
-            const guess = prompt("3자리 숫자를 입력해서 게임을 시작해보세요!"); // 사용자에게 알림창 띄우기
-            guessCount++; // 추측 카운트 증가
-            const result = playRound(secretNums, guess); // 게임 한라운드 실행
-            resultData.textContent += (`${guessCount}번 입력숫자:${guess} => ${result.strike} 스트라이크, ${result.ball} 볼`);
-            if (result.strike === 3) {
-                resultData.textContent = (`축하해요! ${guessCount}번째에 성공했어요!`);
-                break; // 3 스트라이크가 되면 게임 종료
+            if (ball === 0 && strike == 0) {
+                out++;
+                $logs.append(`현재 아웃 개수 ${out}`, document.createElement('br'));
+            } else {
+                $logs.append(`${value}: ${strike}스트라이크 ${ball}볼 ${out}아웃`, document.createElement('br'));
             }
-        }
-    }
-
-</script>
-
-
-<body>
-    <h1>숫자 야구!</h1>
-    <p>당신은 과연 숫자를 맞출 수 있을까요?</p>
-    <p>3자리 숫자를 입력해보세요.</p>
-    <p>게임 방법</p>
-    <p>1. 도전하기 버튼을 누른다</p>
-    <p>2. 입력창이 뜨면 숫자를 입력</p>
-    <p>3. F12를 눌러 콘솔창에서 로그를 확인하면서 숫자 맞추기</p>
-    <button onclick="gamestart()">도전하기</button>
-    <p id="result"></p>
+            if (out === 3) {
+                defeated();
+                return;
+            }
+            tries.push(value);
+        });
+    </script>
 </body>
 
 </html>
