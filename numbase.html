@@ -79,10 +79,7 @@
             return true;
         }
 
-        function defeated() {
-            const message = document.createTextNode(`패배! 정답은 ${answer.join('')}`);
-            $logs.appendChild(message);
-        }
+        
 
         $form.addEventListener('submit', (event) => {
             // 기본 동작 막기. -> 여기서는 새로고침을 막음. 대표적인 친구들이 form tag와 a tag.
@@ -92,11 +89,7 @@
             if (checkInput(value)) {
                 // 입력값 문제 없음
                 if (answer.join('') === value) {
-                    $logs.textContent = '정답!!';
-                    return;
-                }
-                if (tries.length >= 9) {
-                    defeated();
+                    $logs.textContent = `${tries.length + 1}번 만에 맞추셨습니다.`;
                     return;
                 }
             } else {
