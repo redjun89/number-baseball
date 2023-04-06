@@ -1,12 +1,101 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>숫자야구</title>
+    <title>숫자야구!</title>
 </head>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+    }
+
+    h1 {
+        margin-top: 50px;
+    }
+
+    button {
+        margin-top: 20px;
+        padding: 10px 20px;
+        font-size: 20px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #0062cc;
+    }
+</style>
+
+<script>
+    gamestart = () => {
+        // 비밀 숫자 생성 함수
+        function makeRandomNum() {
+            let code;
+            do {
+                code = Math.floor(Math.random() * 900) + 100; // 3자리의 랜덤한 비밀 숫자 생성
+            } while (duplicateCheck(code)); // 중복체크 함수 실행 => 결과가 false일때까지 반복 실행
+            return code;
+        }
+
+        // 중복체크 함수
+        function duplicateCheck(num) {
+            const nums = Array.from(num.toString()).map(Number); // 생성한 랜덤 숫자를 배열로 변환
+            return new Set(nums).size !== nums.length; // 중복된 숫자가 있는지 체크 중복이 없으면 false 반환
+        }
+
+        // 게임의 한 라운드를 진행하는 함수
+        function playRound(secretNums, guess) {
+            const secretcodes = Array.from(secretNums.toString()).map(Number); // 비밀 코드를 숫자 배열로 변환
+            const guessnums = Array.from(guess.toString()).map(Number); // 사용자가 입력한 숫자를 자릿수 배열로 변환
+            let strike = 0;
+            let ball = 0;
+            for (let i = 0; i < secretcodes.length; i++) {
+                if (secretcodes[i] === guessnums[i]) {
+                    strike++; // 숫자와 자리가 같을 경우 스트라이크 카운트 증가
+                } else if (secretcodes.includes(guessnums[i])) {
+                    ball++; // 숫자는 같지만 자리가 다를 경우 볼 카운트 증가
+                }
+            }
+            return { strike, ball }; // 스트라이크와 볼 카운트 반환
+        }
+
+        // 게임 설정
+        const secretNums = makeRandomNum(); // 비밀 숫자 생성
+        let guessCount = 0; // 추측 카운트 초기화
+
+        // 게임 루프
+        while (true) {
+            const guess = prompt("3자리 숫자를 입력해서 게임을 시작해보세요!"); // 사용자에게 알림창 띄우기
+            guessCount++; // 추측 카운트 증가
+            const result = playRound(secretNums, guess); // 게임 한라운드 실행
+            console.log(`${guessCount}번 입력숫자:${guess} => ${result.strike} 스트라이크, ${result.ball} 볼`);
+            if (result.strike === 3) {
+                console.log(`축하해요! ${guessCount}번째에 성공했어요!`);
+                break; // 3 스트라이크가 되면 게임 종료
+            }
+        }
+    }
+
+</script>
+
+
 <body>
-    
+    <h1>숫자 야구!</h1>
+    <p>당신은 과연 숫자를 맞출 수 있을까요?</p>
+    <p>3자리 숫자를 입력해보세요.</p>
+    <p>게임 방법</p>
+    <p>1. 도전하기 버튼을 누른다</p>
+    <p>2. 입력창이 뜨면 숫자를 입력</p>
+    <p>3. F12를 눌러 콘솔창에서 로그를 확인하면서 숫자 맞추기</p>
+    <button onclick="gamestart()">도전하기</button>
+    <p id="result"></p>
 </body>
+
 </html>
